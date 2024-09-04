@@ -41,7 +41,18 @@ app.get('/', (request, response) => {
     response.send('¡Hola, mundo!')
 })
 
-// 8. Define una ruta para manejar el POST del formulario
+// 8. Ruta para obtener todos los datos guardados
+app.get('/get_homework_data', async (request, response) => {
+    try {
+        const data = await Formulario.find()
+        response.json(data)
+    } catch (error) {
+        console.error('Error al obtener los formularios:', error)
+        response.status(500).json({ message: 'Error al obtener los formularios' })
+    }
+})
+
+// 9. Define una ruta para manejar el POST del formulario
 app.post('/submit_homework_form', async(request, response)=>{
     const {nombre, email, duda} = request.body
 
@@ -55,7 +66,7 @@ app.post('/submit_homework_form', async(request, response)=>{
     }    
 })
 
-// 7. Inicia el servidor
+//  Inicia el servidor
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`)
 })
