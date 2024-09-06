@@ -24,40 +24,62 @@ mongoose.connect('mongodb+srv://air_eagle9511:np2mgKOR5A7UuoIW@luisafernandacruz
 })
 
 // 6. Define un esquema y un modelo para MongoDB
-const Schema = mongoose.Schema
-const FormularioSchema = new Schema({
-    nombre:String,
-    email:String,
-    duda:String
+const SchemaPregunta = mongoose.Schema
+const FormularioSchema = new SchemaPregunta({
+    nombre:{type:String, required:true},
+    email:{type:String, required:true},
+    duda:{type:String, required:true}
 }, {
     collection:'formularios_de_dudas'
 })
 
-const Formulario = mongoose.model('Formulario', FormularioSchema)
+const FormularioPregunta = mongoose.model('FormularioPregunta', FormularioSchema)
 
+// 6.1. Definir un esquema y un modelo para las respuestas del formulario alojado en MongoDB
+const RespuestaSchema = mongoose.Schema
+const RespuestaFormularioSchema = RespuestaSchema({
+    id_respuesta: {type: String, required:true },
+    teacher_name:{type: String, required:true},
+    respuesta: {type: String, required:true}
+}, {
+    collection:'formulario_de_respuestas'
+})
+
+const FormularioRespuesta = mongoose.model('FormularioRespuesta', RespuestaFormularioSchema)
 
 // 7. Define una ruta básica GET
 app.get('/', (request, response) => {
     response.send('¡Hola, mundo!')
 })
 
-// 8. Ruta para obtener todos los datos guardados
+// 8. Ruta para obtener todas las preguntas guardadas
 app.get('/get_homework_data', async (request, response) => {
     try {
-        const data = await Formulario.find()
+        const data = await FormularioPregunta.find()
         response.json(data)
     } catch (error) {
-        console.error('Error al obtener los formularios:', error)
-        response.status(500).json({ message: 'Error al obtener los formularios' })
+        console.error('Error al obtener las preguntas', error)
+        response.status(500).json({ message: 'Error al obtener las preguntas' })
     }
 })
 
-// 9. Define una ruta para manejar el POST del formulario
+// 8.1. Ruta para obtener todas las respuestas guardadas
+app.get('/get_answer_data', async (request, response) => {
+    try {
+        const data = await FormularioRespuesta.find()
+        response.json(data)
+    } catch (error) {
+        console.error('Error al obtener las respuestas:', error)
+        response.status(500).json({ message: 'Error al obtener las respuestas' })
+    }
+})
+
+// 9. Define una ruta para manejar el POST del formulario de preguntas
 app.post('/submit_homework_form', async(request, response)=>{
     const {nombre, email, duda} = request.body
 
     try{
-        const nuevoFormulario = new Formulario({nombre, email, duda})
+        const nuevoFormulario = new FormularioPregunta({nombre, email, duda})
         await nuevoFormulario.save()
         response.json({ message: 'Información recibida con éxito. Pronto recibirás un mensaje de uno de nuestros docentes especializados.' })
     }catch(error){
@@ -66,6 +88,19 @@ app.post('/submit_homework_form', async(request, response)=>{
     }    
 })
 
+// 9.1 Define una ruta para manejar el POST del formulario de respuestas
+app.post('/submit_answer_homework_form', async(request, response)=>{
+    const {id_respuesta,teacher_name,respuesta} = request.body
+
+    try{
+        const nuevoFormulario = new FormularioRespuesta({id_respuesta,teacher_name,respuesta})
+        await nuevoFormulario.save()
+        response.json({ message: 'Respuesta explicada de forma satisfactoria.'})
+    }catch(error){
+        console.error('Error al guardar la respuesta:', error)
+        response.status(500).json({ message: 'Error al guardar la respuesta' })
+    }    
+})
 //  Inicia el servidor
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`)
