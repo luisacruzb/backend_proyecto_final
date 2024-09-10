@@ -55,10 +55,16 @@ app.get('/', (request, response) => {
 // 8. Ruta para obtener todas las preguntas guardadas
 app.get('/get_homework_data', async (request, response) => {
     try {
-        const data = await FormularioPregunta.find()
-        response.json(data)
+        const preguntas = await FormularioPregunta.find()
+
+        const preguntasConRespuestas = await Promise.all(preguntas.map(async pregunta =>{
+            const respuestas = await FormularioRespuesta.find({id_respuesta:pregunta._id.toString()})
+            return {...pregunta.toObject(), respuestas}
+        }))
+
+        response.json(preguntasConRespuestas)
     } catch (error) {
-        console.error('Error al obtener las preguntas', error)
+        console.error('Error al obtener las preguntas y respuestas', error)
         response.status(500).json({ message: 'Error al obtener las preguntas' })
     }
 })
